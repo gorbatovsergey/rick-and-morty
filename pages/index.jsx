@@ -17,25 +17,28 @@ const Index = (props) => {
 
   const [queryString, setQueryString] = useState("");
   const [filters, setFilters] = useState({
-    status: router.query.status ? router.query.status : "",
-    species: router.query.species ? router.query.species : "",
-    gender: router.query.gender ? router.query.gender : "",
-    type: router.query.type ? router.query.type : "",
+    status: router.query.status ? router.query.status : null,
+    species: router.query.species ? router.query.species : null,
+    gender: router.query.gender ? router.query.gender : null,
+    type: router.query.type ? router.query.type : null,
   });
 
   useEffect(() => {
     setQueryString(
-      qs.stringify({
-        status: filters.status,
-        species: filters.species,
-        gender: filters.gender,
-        type: filters.type,
-      })
+      qs.stringify(
+        {
+          status: filters.status,
+          species: filters.species,
+          gender: filters.gender,
+          type: filters.type,
+        },
+        { skipNulls: true }
+      )
     );
   }, [filters]);
 
   const addUrl = () => {
-    router.push(myURL + "?" + queryString);
+    router.push("?" + queryString);
   };
 
   const addFiltres = (event) => {
@@ -44,13 +47,13 @@ const Index = (props) => {
 
   const resetFiltres = () => {
     setFilters({
-      status: "",
-      species: "",
-      gender: "",
-      type: "",
+      status: null,
+      species: null,
+      gender: null,
+      type: null,
     });
 
-    router.push(myURL);
+    router.push('/');
   };
 
   return (
