@@ -1,0 +1,28 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px;
+
+  .title {
+    margin: 25px 0;
+  }
+
+  .content {
+    display: flex;
+    width: 100%;
+
+    .listCharacters {
+      display: flex;
+      justify-content: center;
+      flex-grow: 1;
+      flex-wrap: wrap;
+      padding: 20px;
+    }
+
+    .filtersButtons {
+      display: flex;
+      justify-content: space-around;
+    }
+  }
+}
