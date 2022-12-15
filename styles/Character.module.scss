@@ -6,3 +6,15 @@
     margin-left: 20px;
   }
 }
+
+@media (max-width: 1000px) {
+  .character {
+    width: 49%;
+  }
+}
+
+@media (max-width: 400px) {
+  .character {
+    width: 100%;
+  }
+}

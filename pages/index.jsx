@@ -6,7 +6,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import Filter from "../components/Filter";
 import Character from "../components/Character";
-import { GET_CHARACTERS, myURL } from "../constants";
+import { GET_CHARACTERS } from "../constants";
 import client from "../helpers";
 import styles from "../styles/index.module.scss";
 
@@ -53,7 +53,7 @@ const Index = (props) => {
       type: null,
     });
 
-    router.push('/');
+    router.push("/");
   };
 
   return (
