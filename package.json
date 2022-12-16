@@ -17,8 +17,9 @@
     "@emotion/styled": "^11.10.5",
     "@mui/material": "^5.11.0",
     "graphql": "^16.6.0",
+    "lodash.debounce": "^4.0.8",
     "next": "^13.0.6",
-    "qs": "^6.11.0",
+    "query-string": "^8.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sass": "^1.56.2"

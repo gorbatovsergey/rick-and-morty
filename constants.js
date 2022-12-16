@@ -3,8 +3,11 @@ import { gql } from "@apollo/client";
 export const URL = "https://rickandmortyapi.com/graphql";
 export const myURL = "http://localhost:3000/";
 export const GET_CHARACTERS = gql`
-  query getCharacters($filter: FilterCharacter) {
-    characters(filter: $filter) {
+  query getCharacters($page: Int, $filter: FilterCharacter) {
+    characters(page: $page, filter: $filter) {
+      info {
+        pages
+      }
       results {
         name
         status

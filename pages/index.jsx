@@ -1,9 +1,12 @@
 import { useState, useId, useEffect } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
-import qs from "qs";
+import queryString from "query-string";
 import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import Pagination from "@mui/material/Pagination";
+import debounce from "lodash.debounce";
 import Filter from "../components/Filter";
 import Character from "../components/Character";
 import { GET_CHARACTERS } from "../constants";
@@ -13,48 +16,67 @@ import styles from "../styles/index.module.scss";
 const Index = (props) => {
   const id = useId();
   const router = useRouter();
-  const characters = props.data.characters.results;
-
-  const [queryString, setQueryString] = useState("");
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [filters, setFilters] = useState({
-    status: router.query.status ? router.query.status : null,
-    species: router.query.species ? router.query.species : null,
-    gender: router.query.gender ? router.query.gender : null,
-    type: router.query.type ? router.query.type : null,
+    status: router.query.status ? router.query.status : "",
+    species: router.query.species ? router.query.species : "",
+    gender: router.query.gender ? router.query.gender : "",
+    type: router.query.type ? router.query.type : "",
   });
-
-  useEffect(() => {
-    setQueryString(
-      qs.stringify(
-        {
-          status: filters.status,
-          species: filters.species,
-          gender: filters.gender,
-          type: filters.type,
-        },
-        { skipNulls: true }
-      )
-    );
-  }, [filters]);
-
-  const addUrl = () => {
-    router.push("?" + queryString);
-  };
+  const characters = props.data.characters.results;
+  const maxPages = props.data.characters.info.pages;
+  const getCharacters = debounce(
+    (queryString) => router.push("?" + queryString),
+    300
+  );
 
   const addFiltres = (event) => {
     setFilters({ ...filters, [event.target.name]: event.target.value });
+
+    const stringified = queryString.stringify(
+      { page, ...filters, [event.target.name]: event.target.value },
+      {
+        skipEmptyString: true,
+      }
+    );
+
+    getCharacters(stringified);
   };
 
   const resetFiltres = () => {
     setFilters({
-      status: null,
-      species: null,
-      gender: null,
-      type: null,
+      status: "",
+      species: "",
+      gender: "",
+      type: "",
     });
+    setPage(1);
 
     router.push("/");
   };
+
+  const changePage = (num) => {
+    const stringified = queryString.stringify(
+      { page: num, ...filters },
+      {
+        skipEmptyString: true,
+      }
+    );
+
+    router.push("?" + stringified);
+    setPage(num);
+  };
+
+  useEffect(() => {
+    router.events.on("routeChangeStart", () => setLoading(true));
+    router.events.on("routeChangeComplete", () => setLoading(false));
+
+    return () => {
+      router.events.off("routeChangeStart", () => setLoading(true));
+      router.events.off("routeChangeComplete", () => setLoading(false));
+    };
+  }, []);
 
   return (
     <>
@@ -63,6 +85,12 @@ const Index = (props) => {
       </Head>
       <div className={styles.main}>
         <h1 className={styles.title}>Rick & Morty</h1>
+        <Pagination
+          count={maxPages}
+          color="primary"
+          page={page}
+          onChange={(_, num) => changePage(num)}
+        />
         <div className={styles.content}>
           <div className={styles.filters}>
             <div className={styles.filtersInputs}>
@@ -121,34 +149,36 @@ const Index = (props) => {
                 </MenuItem>
               </Filter>
             </div>
-            <div className={styles.filtersButtons}>
-              <Button variant="contained" onClick={addUrl}>
-                Apply
-              </Button>
-              &nbsp;
+            <div className={styles.filtersButton}>
               <Button variant="contained" onClick={resetFiltres}>
                 Reset
               </Button>
             </div>
           </div>
-          <div className={styles.listCharacters}>
-            {characters.length === 0 ? (
-              <h2>No characters with selected filters</h2>
-            ) : (
-              characters.map((character, index) => (
-                <Character
-                  key={`${id}-${index}`}
-                  name={character.name}
-                  status={character.status}
-                  species={character.species}
-                  type={character.type}
-                  gender={character.gender}
-                  locationName={character.location.name}
-                  episodes={character.episode}
-                />
-              ))
-            )}
-          </div>
+          {loading ? (
+            <div className={styles.loader}>
+              <CircularProgress size="200px" />
+            </div>
+          ) : (
+            <div className={styles.listCharacters}>
+              {characters.length === 0 ? (
+                <h2>No characters with selected filters</h2>
+              ) : (
+                characters.map((character, index) => (
+                  <Character
+                    key={`${id}-${index}`}
+                    name={character.name}
+                    status={character.status}
+                    species={character.species}
+                    type={character.type}
+                    gender={character.gender}
+                    locationName={character.location.name}
+                    episodes={character.episode}
+                  />
+                ))
+              )}
+            </div>
+          )}
         </div>
       </div>
     </>
@@ -158,10 +188,17 @@ const Index = (props) => {
 export default Index;
 
 export async function getServerSideProps(context) {
+  let page = 1;
   const query = context.query;
+  if (context.query.page) {
+    page = parseInt(context.query.page);
+    delete query.page;
+  }
+
   const { data } = await client.query({
     query: GET_CHARACTERS,
     variables: {
+      page: Number(page),
       filter: query,
     },
   });
