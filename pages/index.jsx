@@ -1,4 +1,4 @@
-import { useState, useId, useEffect } from "react";
+import { useState, useId, useEffect, useCallback } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import queryString from "query-string";
@@ -6,10 +6,16 @@ import MenuItem from "@mui/material/MenuItem";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Pagination from "@mui/material/Pagination";
+import TextField from "@mui/material/TextField";
 import debounce from "lodash.debounce";
 import Filter from "../components/Filter";
 import Character from "../components/Character";
-import { GET_CHARACTERS } from "../constants";
+import {
+  genderCharacter,
+  GET_CHARACTERS,
+  speciesCharacter,
+  statusCharacter,
+} from "../constants";
 import client from "../helpers";
 import styles from "../styles/index.module.scss";
 
@@ -26,9 +32,9 @@ const Index = (props) => {
   });
   const characters = props.data.characters.results;
   const maxPages = props.data.characters.info.pages;
-  const getCharacters = debounce(
-    (queryString) => router.push("?" + queryString),
-    300
+  const getCharacters = useCallback(
+    debounce((queryString) => router.push("?" + queryString), 1500),
+    []
   );
 
   const addFiltres = (event) => {
@@ -101,9 +107,11 @@ const Index = (props) => {
                 selectValue={filters.status}
                 addFiltres={addFiltres}
               >
-                <MenuItem value="Alive">Alive</MenuItem>
-                <MenuItem value="Dead">Dead</MenuItem>
-                <MenuItem value="unknown">unknown</MenuItem>
+                {statusCharacter.map((status, index) => (
+                  <MenuItem key={`${id}-${index}`} value={status}>
+                    {status}
+                  </MenuItem>
+                ))}
               </Filter>
               <Filter
                 inputLabelName={"Species"}
@@ -112,8 +120,11 @@ const Index = (props) => {
                 selectValue={filters.species}
                 addFiltres={addFiltres}
               >
-                <MenuItem value="Human">Human</MenuItem>
-                <MenuItem value="Alien">Alien</MenuItem>
+                {speciesCharacter.map((species, index) => (
+                  <MenuItem key={`${id}-${index}`} value={species}>
+                    {species}
+                  </MenuItem>
+                ))}
               </Filter>
               <Filter
                 inputLabelName={"Gender"}
@@ -122,32 +133,21 @@ const Index = (props) => {
                 selectValue={filters.gender}
                 addFiltres={addFiltres}
               >
-                <MenuItem value="Male">Male</MenuItem>
-                <MenuItem value="Female">Female</MenuItem>
-                <MenuItem value="unknown">unknown</MenuItem>
+                {genderCharacter.map((gender, index) => (
+                  <MenuItem key={`${id}-${index}`} value={gender}>
+                    {gender}
+                  </MenuItem>
+                ))}
               </Filter>
-              <Filter
-                inputLabelName={"Type"}
-                selectName={"type"}
-                id={"filter-type"}
-                selectValue={filters.type}
-                addFiltres={addFiltres}
-              >
-                <MenuItem value="">none</MenuItem>
-                <MenuItem value="Genetic experiment">
-                  Genetic experiment
-                </MenuItem>
-                <MenuItem value="Superhuman (Ghost trains summoner)">
-                  Superhuman (Ghost trains summoner)
-                </MenuItem>
-                <MenuItem value="Parasite">Parasite</MenuItem>
-                <MenuItem value="Human with antennae">
-                  Human with antennae
-                </MenuItem>
-                <MenuItem value="Human with ants in his eyes">
-                  Human with ants in his eyes
-                </MenuItem>
-              </Filter>
+              <TextField
+                id="filter-type"
+                label="Type"
+                variant="outlined"
+                value={filters.type}
+                onChange={addFiltres}
+                name={"type"}
+                sx={{ width: 250, marginBottom: 2 }}
+              />
             </div>
             <div className={styles.filtersButton}>
               <Button variant="contained" onClick={resetFiltres}>

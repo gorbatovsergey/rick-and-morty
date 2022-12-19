@@ -24,3 +24,17 @@ export const GET_CHARACTERS = gql`
     }
   }
 `;
+
+export const speciesCharacter = [
+  "Alien",
+  "Disease",
+  "Human",
+  "Humanoid",
+  "Robot",
+  "Poopybutthole",
+  "Mythological Creature",
+];
+
+export const genderCharacter = ["Male", "Female", "unknown"];
+
+export const statusCharacter = ["Alive", "Dead", "unknown"];
