@@ -33,7 +33,7 @@ const Index = (props) => {
   const characters = props.data.characters.results;
   const maxPages = props.data.characters.info.pages;
   const getCharacters = useCallback(
-    debounce((queryString) => router.push("?" + queryString), 1500),
+    debounce((queryString) => router.push("?" + queryString), 500),
     []
   );
 
@@ -41,12 +41,13 @@ const Index = (props) => {
     setFilters({ ...filters, [event.target.name]: event.target.value });
 
     const stringified = queryString.stringify(
-      { page, ...filters, [event.target.name]: event.target.value },
+      { page: 1, ...filters, [event.target.name]: event.target.value },
       {
         skipEmptyString: true,
       }
     );
 
+    setPage(1);
     getCharacters(stringified);
   };
 
