@@ -8,7 +8,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Pagination from "@mui/material/Pagination";
 import TextField from "@mui/material/TextField";
 import debounce from "lodash.debounce";
-import { Filter, Character } from "../components/index.js";
+import { Filter, Character } from "../components";
 import { arrayFiltres, GET_CHARACTERS } from "../constants/constants";
 import client from "../utils/helpers";
 import styles from "../styles/index.module.scss";

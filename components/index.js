@@ -1,4 +1,2 @@
-import Character from "./Character/Character.jsx";
-import Filter from "./Filter/Filter.jsx";
-
-export { Character, Filter };
+export { default as Character } from "./Character/Character";
+export { default as Filter } from "./Filter/Filter";
