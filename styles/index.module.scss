@@ -12,19 +12,27 @@
     display: flex;
     width: 100%;
 
-    .listCharacters {
-      display: flex;
-      justify-content: center;
-      flex-grow: 1;
-      flex-wrap: wrap;
-      padding: 20px;
+    .borderCharacters {
+      margin: 20px;
+      padding: 20px 0;
+      border: 5px solid rgba(78, 78, 78, 0.7);
+      border-radius: 10px;
+
+      .listCharacters {
+        display: flex;
+        justify-content: flex-start;
+        flex-grow: 1;
+        flex-wrap: wrap;
+        height: 74vh;
+        overflow: auto;
+        color: white;
+      }
     }
 
     .loader {
-      display: flex;
-      flex-grow: 1;
-      justify-content: center;
-      align-items: center;
+      position: fixed;
+      left: 47%;
+      top: 50%;
     }
 
     .filtersButton {

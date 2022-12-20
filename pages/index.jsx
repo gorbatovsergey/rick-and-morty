@@ -8,15 +8,9 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Pagination from "@mui/material/Pagination";
 import TextField from "@mui/material/TextField";
 import debounce from "lodash.debounce";
-import Filter from "../components/Filter";
-import Character from "../components/Character";
-import {
-  genderCharacter,
-  GET_CHARACTERS,
-  speciesCharacter,
-  statusCharacter,
-} from "../constants";
-import client from "../helpers";
+import { Filter, Character } from "../components/index.js";
+import { arrayFiltres, GET_CHARACTERS } from "../constants/constants";
+import client from "../utils/helpers";
 import styles from "../styles/index.module.scss";
 
 const Index = (props) => {
@@ -24,29 +18,28 @@ const Index = (props) => {
   const router = useRouter();
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const { status, species, gender, type } = router.query;
   const [filters, setFilters] = useState({
-    status: router.query.status ? router.query.status : "",
-    species: router.query.species ? router.query.species : "",
-    gender: router.query.gender ? router.query.gender : "",
-    type: router.query.type ? router.query.type : "",
+    status: status ?? "",
+    species: species ?? "",
+    gender: gender ?? "",
+    type: type ?? "",
   });
-  const characters = props.data.characters.results;
-  const maxPages = props.data.characters.info.pages;
+  const { results: characters, info } = props.data.characters;
+  const maxPages = info.pages;
   const getCharacters = useCallback(
     debounce((queryString) => router.push("?" + queryString), 500),
     []
   );
 
   const addFiltres = (event) => {
-    setFilters({ ...filters, [event.target.name]: event.target.value });
-
+    const { name, value } = event.target;
     const stringified = queryString.stringify(
-      { page: 1, ...filters, [event.target.name]: event.target.value },
-      {
-        skipEmptyString: true,
-      }
+      { page: 1, ...filters, [name]: value },
+      { skipEmptyString: true }
     );
 
+    setFilters({ ...filters, [name]: value });
     setPage(1);
     getCharacters(stringified);
   };
@@ -59,20 +52,17 @@ const Index = (props) => {
       type: "",
     });
     setPage(1);
-
     router.push("/");
   };
 
   const changePage = (num) => {
     const stringified = queryString.stringify(
       { page: num, ...filters },
-      {
-        skipEmptyString: true,
-      }
+      { skipEmptyString: true }
     );
 
-    router.push("?" + stringified);
     setPage(num);
+    router.push("?" + stringified);
   };
 
   useEffect(() => {
@@ -101,54 +91,35 @@ const Index = (props) => {
         <div className={styles.content}>
           <div className={styles.filters}>
             <div className={styles.filtersInputs}>
-              <Filter
-                inputLabelName={"Status"}
-                selectName={"status"}
-                id={"filter-status"}
-                selectValue={filters.status}
-                addFiltres={addFiltres}
-              >
-                {statusCharacter.map((status, index) => (
-                  <MenuItem key={`${id}-${index}`} value={status}>
-                    {status}
-                  </MenuItem>
-                ))}
-              </Filter>
-              <Filter
-                inputLabelName={"Species"}
-                selectName={"species"}
-                id={"filter-species"}
-                selectValue={filters.species}
-                addFiltres={addFiltres}
-              >
-                {speciesCharacter.map((species, index) => (
-                  <MenuItem key={`${id}-${index}`} value={species}>
-                    {species}
-                  </MenuItem>
-                ))}
-              </Filter>
-              <Filter
-                inputLabelName={"Gender"}
-                selectName={"gender"}
-                id={"filter-gender"}
-                selectValue={filters.gender}
-                addFiltres={addFiltres}
-              >
-                {genderCharacter.map((gender, index) => (
-                  <MenuItem key={`${id}-${index}`} value={gender}>
-                    {gender}
-                  </MenuItem>
-                ))}
-              </Filter>
-              <TextField
-                id="filter-type"
-                label="Type"
-                variant="outlined"
-                value={filters.type}
-                onChange={addFiltres}
-                name={"type"}
-                sx={{ width: 250, marginBottom: 2 }}
-              />
+              {arrayFiltres.map(({ inputLabelName, key, id, list }, index) =>
+                key === "type" ? (
+                  <TextField
+                    id={id}
+                    label={inputLabelName}
+                    variant="outlined"
+                    value={filters[key]}
+                    onChange={addFiltres}
+                    name={key}
+                    sx={{ width: 250, marginBottom: 2 }}
+                    key={`${id}-${index}`}
+                  />
+                ) : (
+                  <Filter
+                    inputLabelName={inputLabelName}
+                    selectName={key}
+                    id={id}
+                    selectValue={filters[key]}
+                    addFiltres={addFiltres}
+                    key={`${id}-${index}`}
+                  >
+                    {list.map((items, index) => (
+                      <MenuItem key={`${id}-${index}`} value={items}>
+                        {items}
+                      </MenuItem>
+                    ))}
+                  </Filter>
+                )
+              )}
             </div>
             <div className={styles.filtersButton}>
               <Button variant="contained" onClick={resetFiltres}>
@@ -158,26 +129,19 @@ const Index = (props) => {
           </div>
           {loading ? (
             <div className={styles.loader}>
-              <CircularProgress size="200px" />
+              <CircularProgress size="80px" />
             </div>
           ) : (
-            <div className={styles.listCharacters}>
-              {characters.length === 0 ? (
-                <h2>No characters with selected filters</h2>
-              ) : (
-                characters.map((character, index) => (
-                  <Character
-                    key={`${id}-${index}`}
-                    name={character.name}
-                    status={character.status}
-                    species={character.species}
-                    type={character.type}
-                    gender={character.gender}
-                    locationName={character.location.name}
-                    episodes={character.episode}
-                  />
-                ))
-              )}
+            <div className={styles.borderCharacters}>
+              <div className={styles.listCharacters}>
+                {characters.length === 0 ? (
+                  <h2>No characters with selected filters</h2>
+                ) : (
+                  characters.map((character, index) => (
+                    <Character key={`${id}-${index}`} character={character} />
+                  ))
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -188,18 +152,18 @@ const Index = (props) => {
 
 export default Index;
 
-export async function getServerSideProps(context) {
-  let page = 1;
-  const query = context.query;
-  if (context.query.page) {
-    page = parseInt(context.query.page);
+export async function getServerSideProps({ query }) {
+  let initialPage = 1;
+
+  if (query.page) {
+    initialPage = parseInt(query.page);
     delete query.page;
   }
 
   const { data } = await client.query({
     query: GET_CHARACTERS,
     variables: {
-      page: Number(page),
+      page: Number(initialPage),
       filter: query,
     },
   });
